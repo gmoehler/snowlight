@@ -42,8 +42,7 @@ void setup() {
 
     // start example
     LOGD(MAIN, "Starting example...");
-    // example_start(DIM_EXAMPLE, 5);
-    example_start(ONOFF_EXAMPLE, 5);
+    example_start(DIM_EXAMPLE, 5);
 }
 
 // everything works with tasks, we dont need the loop...

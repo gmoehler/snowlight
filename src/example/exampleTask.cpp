@@ -43,13 +43,29 @@ static void onoffExampleStart() {
     }
 }
 
-static void dimExampleStart() {
+static void setLightExampleStart() {
     uint8_t num_steps = 20;
     float step = 255 / num_steps;
 
     for (int j = 0; j <= num_steps; j++) {
-        uint8_t ratio = step * j;
-        sendRawToLed({LIGHT_DIM, ratio}, EXAMPL);  // dim
+        uint8_t val = step * j;
+        sendRawToLed({LIGHT_SET, val}, EXAMPL);  // dim
+        delay(500);
+    }
+}
+
+static void dimLightExampleStart() {
+    uint8_t num_steps = 20;
+    uint8_t step = 255 / num_steps;
+
+    sendRawToLed({LIGHT_OFF}, EXAMPL);  // black
+
+    for (int j = 0; j <= num_steps; j++) {
+        sendRawToLed({LIGHT_BRIGHTEN, step}, EXAMPL);  // dim
+        delay(500);
+    }
+    for (int j = 0; j <= num_steps; j++) {
+        sendRawToLed({LIGHT_DIM, step}, EXAMPL);  // dim
         delay(500);
     }
 }
@@ -61,9 +77,14 @@ static void exampleTask(void* arg) {
             onoffExampleStart();
             break;
 
+        case SET_EXAMPLE:
+            LOGI(EXAMPL, "Starting set example");
+            setLightExampleStart();
+            break;
+
         case DIM_EXAMPLE:
             LOGI(EXAMPL, "Starting dim example");
-            dimExampleStart();
+            dimLightExampleStart();
             break;
 
         default:

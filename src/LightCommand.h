@@ -6,7 +6,9 @@
 enum LightCommandType {
     LIGHT_OFF = 0,
     LIGHT_ON,
+    LIGHT_SET,
     LIGHT_DIM,
+    LIGHT_BRIGHTEN,
 
     BUTTON0_CLICK,
     BUTTON0_LONGCLICK,

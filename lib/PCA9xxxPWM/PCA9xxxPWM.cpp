@@ -83,6 +83,23 @@ float PCA9xxxPWM::simple_exp(float refRawIn) {
     return refOut;
 }
 
+uint8_t PCA9xxxPWM::simple_exp2(uint8_t refIn) {
+    uint8_t refOut = refIn;
+
+    if (use_exponential) {
+        if (refIn < 64) {
+            refOut = 6 * refIn / 64;
+        } else if (refIn < 128) {
+            refOut = 12.0 / 64.0 * (refIn - 64) + 6;
+        } else if (refIn < 192) {
+            refOut = 56.0 / 64.0 * (refIn - 128) + 18;
+        } else {
+            refOut = 181.0 / 64.0 * (refIn - 192) + 74;
+        }
+    }
+    return refOut;
+}
+
 void PCA9xxxPWM::pwm(uint8_t port, float v) {
     uint8_t reg_addr = pwm_register_access(port);
 
@@ -104,6 +121,27 @@ void PCA9xxxPWM::pwm(uint8_t port, float v) {
     }
 }
 
+void PCA9xxxPWM::pwm2(uint8_t port, uint8_t v) {
+    uint8_t reg_addr = pwm_register_access(port);
+
+    uint8_t val = simple_exp2(v);
+    if (ALLPORTS == reg_addr) {
+        uint8_t np = number_of_ports();
+        uint8_t va[np];
+
+        for (int i = 0; i < np; i++) {
+            va[i] = val;
+        }
+        pwm2(va);
+    } else {
+        /*
+        Serial.print("Writing PWM: ");
+        Serial.println(v, BIN);
+        */
+        write(reg_addr, val);
+    }
+}
+
 void PCA9xxxPWM::pwm(float *vp) {
     uint8_t n_of_ports = number_of_ports();
     uint8_t data[n_of_ports + 1];
@@ -112,6 +150,26 @@ void PCA9xxxPWM::pwm(float *vp) {
 
     for (int i = 1; i <= n_of_ports; i++) {
         data[i] = simple_exp(*vp++) * 255;
+    }
+
+    Serial.print("Writing PWM: ");
+    for (int i = 0; i <= n_of_ports; i++) {
+        Serial.print(data[i], HEX);
+        Serial.print(" ");
+    }
+    Serial.println();
+
+    write(data, sizeof(data));
+}
+
+void PCA9xxxPWM::pwm2(uint8_t *vp) {
+    uint8_t n_of_ports = number_of_ports();
+    uint8_t data[n_of_ports + 1];
+
+    *data = pwm_register_access(0) | AUTO_INCREMENT_PWM;
+
+    for (int i = 1; i <= n_of_ports; i++) {
+        data[i] = simple_exp2(*vp++);
     }
 
     Serial.print("Writing PWM: ");

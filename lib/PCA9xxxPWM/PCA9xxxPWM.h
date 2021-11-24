@@ -100,6 +100,7 @@ class PCA9xxxPWM {
      *    Values outside this range will have undefined behavior.
      */
     virtual void pwm(uint8_t port, float v);
+    virtual void pwm2(uint8_t port, uint8_t v);
 
     /** Set all output port PWM ratio, specified as a percentage (array of
      * float).
@@ -112,6 +113,7 @@ class PCA9xxxPWM {
      *    The length of array should be at least number_of_ports().
      */
     virtual void pwm(float *vp);
+    virtual void pwm2(uint8_t *vp);
 
     /** Number of PWM ports of this device.
      *
@@ -183,6 +185,7 @@ class PCA9xxxPWM {
 
    protected:
     virtual float simple_exp(float refIn);
+    virtual uint8_t simple_exp2(uint8_t refIn);
     uint8_t _i2cAddr;
     TwoWire *_i2cPort;
     boolean use_exponential;

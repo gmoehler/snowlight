@@ -1,7 +1,8 @@
 #include "LightCommand.h"
 
-const char* commandNames[] = {"LIGHT_OFF", "LIGHT_ON", "LIGHT_DIM",
-                              "BUT0_CLICK", "BUT0_LONGCLICK"};
+const char* commandNames[] = {"LIGHT_OFF",     "LIGHT_ON",       "LIGHT_SET",
+                              "LIGHT_DIM",     "LIGHT_BRIGHTEN", "BUT0_CLICK",
+                              "BUT0_LONGCLICK"};
 
 const char* commandNameNoCommand = "NO_COMMAND      ";
 const char* commandNameUnknownCmd = "UNKNOWN_COMMAND ";

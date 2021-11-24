@@ -4,29 +4,44 @@
 
 xQueueHandle ledQueue = NULL;
 #define DEFAULT_I2C_ADDR_9622 0x70  // At your preference (of your h/w setting)
-#define OE_PORT 2                   // port for PCA9622 output enablement
 
-PCA9622PWM* lightPwm;
+PCA9622PWM lightPwm(DEFAULT_I2C_ADDR_9622);
 
 uint8_t nPorts = 0;
-float* pwmData;  // array for I2C communication
+uint8_t* pwmData;     // array of nPorts length for I2C communication
+uint8_t* curPwmData;  // array of nPorts length for current state of leds
 
-void dimTo(float ratio) {
-    LOGD(LEDS, "Dimming to %.1f.", ratio);
-    float ratio2 = fmin(fmax(ratio, 0.0), 1.0);
-    lightPwm->exponential_adjustment(true);
-    // allocate array here, to allow async calls
-    float data2send[nPorts];
+void dimTo(uint8_t val) {
+    LOGD(LEDS, "Dimming to %.1d.", val);
+    uint8_t valNorm = std::min(std::max(val, (uint8_t)0), (uint8_t)255);
+    lightPwm.exponential_adjustment(true);
+
     for (int i = 0; i < nPorts; i++) {
-        data2send[i] = ratio2;
+        pwmData[i] = valNorm;
+        curPwmData[i] = valNorm;
     }
-    lightPwm->pwm(data2send);
+    lightPwm.pwm2(pwmData);
+}
+
+void dimBy(uint8_t val, bool increase) {
+    LOGD(LEDS, "%s by %s%.1d.", increase ? "brighten" : "dim",
+         increase ? "" : "-", val);
+    lightPwm.exponential_adjustment(true);
+
+    for (int i = 0; i < nPorts; i++) {
+        uint8_t newVal = curPwmData[i] + (increase ? val : -val);
+        uint8_t newValNorm =
+            std::min(std::max(newVal, (uint8_t)0), (uint8_t)255);
+        pwmData[i] = newValNorm;
+        curPwmData[i] = newValNorm;
+    }
+    lightPwm.pwm2(pwmData);
 }
 
 void testGradient() {
     uint8_t num_steps = 20;
     float step = 1.0 / num_steps;
-    lightPwm->exponential_adjustment(true);
+    lightPwm.exponential_adjustment(true);
     for (int j = 1; j <= num_steps; j++) {
         float ratio = step * j;
         LOGD(LEDS, "Dimming %d ratio: %.2f", j, ratio);
@@ -70,14 +85,15 @@ void ledTask(void* arg) {
             LOGD(LEDS, "Receiving cmd: %s", cmd.toString().c_str());
 
             if (cmd.getType() == LIGHT_ON) {
-                dimTo(1.0);
+                dimTo(255);
             } else if (cmd.getType() == LIGHT_OFF) {
-                dimTo(0.0);
+                dimTo(0);
+            } else if (cmd.getType() == LIGHT_SET) {
+                dimTo(cmd.getField(1));
+            } else if (cmd.getType() == LIGHT_BRIGHTEN) {
+                dimBy(cmd.getField(1), true);
             } else if (cmd.getType() == LIGHT_DIM) {
-                uint8_t valRaw = cmd.getField(1);
-                float val = (float)cmd.getField(1) / 255;
-                LOGD(LEDS, "Dim: %d -> %.2f", valRaw, val);
-                dimTo(val);
+                dimBy(cmd.getField(1), false);
             }
         }
     }
@@ -87,13 +103,11 @@ bool led_setup(uint8_t queueSize) {
     ledQueue = xQueueCreate(queueSize, sizeof(RawCommand));
     delay(1000);
 
-    // uint8_t port = scanDevice();
     LOGW(LEDS, "Connecting to PCA9622 at %#04x ...", DEFAULT_I2C_ADDR_9622);
-    lightPwm = new PCA9622PWM(DEFAULT_I2C_ADDR_9622);
-    if (lightPwm->begin() == false) {
+    if (lightPwm.begin() == false) {
         LOGW(LEDS, "Unable to connect to PCA9622. Attempting to reset...");
-        lightPwm->reset();
-        if (lightPwm->begin() == false) {
+        lightPwm.reset();
+        if (lightPwm.begin() == false) {
             LOGE(
                 LEDS,
                 "Device does not appear to be connected. Please check wiring.");
@@ -103,8 +117,9 @@ bool led_setup(uint8_t queueSize) {
     }
 
     Wire.setClock(400000);
-    nPorts = lightPwm->number_of_ports();
-    pwmData = (float*)malloc(nPorts * sizeof(float*));
+    nPorts = lightPwm.number_of_ports();
+    pwmData = (uint8_t*)malloc(nPorts * sizeof(uint8_t*));
+    curPwmData = (uint8_t*)malloc(nPorts * sizeof(uint8_t*));
 
     LOGD(LEDS, "Number of LED ports: %d", nPorts);
     return true;
