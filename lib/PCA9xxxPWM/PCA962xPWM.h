@@ -109,7 +109,7 @@ class PCA962xPWM : public PCA9xxxPWM {
         AUTO_INCREMENT = 0x80,
         PWMALL = 0xFF,
         ADR_RESET = 0x06,
-        ADR_ALLCALL = 0x70,
+        ADR_ALLCALL = 0xE0,
     };
 };
 

@@ -4,11 +4,11 @@
 #include "LightCommand.h"
 #include "snowlight.h"
 
-extern xQueueHandle lightQueue;
+extern xQueueHandle ledQueue;
 extern xQueueHandle stepperQueue;
 
 enum QueueType {
-    LIGHT_QUEUE,
+    LED_QUEUE,
     STEPPER_QUEUE,
 };
 
@@ -16,10 +16,10 @@ enum QueueType {
 
 bool sendToQueue(QueueType q, LightCommand& cmd, const char* logtag,
                  bool debugPrintout = true);
-bool sendToLight(LightCommand& cmd, const char* logtag,
-                 bool debugPrintout = true);
-bool sendRawToLight(RawCommand rawCmd, const char* logtag,
-                    bool debugPrintout = true);
+bool sendToLed(LightCommand& cmd, const char* logtag,
+               bool debugPrintout = true);
+bool sendRawToLed(RawCommand rawCmd, const char* logtag,
+                  bool debugPrintout = true);
 void clearQueue(QueueType q);
 uint8_t getQueueSize(QueueType q);
 

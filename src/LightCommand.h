@@ -4,8 +4,9 @@
 #include "snowlight.h"
 
 enum LightCommandType {
-    ON = 0,
-    OFF,
+    LIGHT_OFF = 0,
+    LIGHT_ON,
+    LIGHT_DIM,
 
     BUTTON0_CLICK,
     BUTTON0_LONGCLICK,

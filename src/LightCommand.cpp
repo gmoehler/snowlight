@@ -1,6 +1,7 @@
 #include "LightCommand.h"
 
-const char* commandNames[] = {"ON", "OFF", "BUT0_CLICK", "BUT0_LONGCLICK"};
+const char* commandNames[] = {"LIGHT_OFF", "LIGHT_ON", "LIGHT_DIM",
+                              "BUT0_CLICK", "BUT0_LONGCLICK"};
 
 const char* commandNameNoCommand = "NO_COMMAND      ";
 const char* commandNameUnknownCmd = "UNKNOWN_COMMAND ";
@@ -58,10 +59,10 @@ String LightCommand::toString() {
 
 String rawCommandToString(RawCommand rawCmd) {
     char buffer[40];
-    snprintf(buffer, 40, "%3d", rawCmd.field[0]);
+    snprintf(buffer, 40, "%3d %3d %3d", rawCmd.field[0], rawCmd.field[1],
+             rawCmd.field[2]);
     return String(buffer);
 }
-
 bool LightCommand::operator==(const LightCommand& b) const {
     for (int i = 0; i < N_CMD_FIELDS; i++) {
         if (_rawCmd.field[i] != b._rawCmd.field[i]) {

@@ -29,9 +29,7 @@
 
 PCA9622PWM::PCA9622PWM(uint8_t i2cAddr, uint8_t output_enable_port,
                        TwoWire *i2cPort)
-    : PCA962xPWM(i2cAddr, i2cPort),
-      n_of_ports(16),
-      output_enable_port(output_enable_port) {}
+    : PCA962xPWM(i2cAddr, i2cPort), n_of_ports(16) {}
 
 PCA9622PWM::~PCA9622PWM() {}
 
@@ -46,13 +44,11 @@ void PCA9622PWM::init(void) {
         0xAA,
         0xAA,
         0xAA,
-        0xAA,  // LEDOUT[3:0]: enable PWM control
+        0xAA,  // LEDOUT[3:0]: enable PWM control only
     };
 
     write(init_array0, sizeof(init_array0));
     write(init_array1, sizeof(init_array1));
-
-    digitalWrite(output_enable_port, LOW);  // enable output
 }
 
 uint8_t PCA9622PWM::pwm_register_access(uint8_t port) {
@@ -74,10 +70,16 @@ boolean PCA9622PWM::isMyDevice(uint8_t i2cAddr, TwoWire *i2cPort) {
 
 // static
 boolean PCA9622PWM::_isMyDevice(uint8_t i2cAddr, TwoWire *i2cPort) {
+    Serial.println("PCA9622._isMyDevice");
     // PCA9622 returns 0b11100010, 100, 1000 for SUBADR1 - SUBADR3 by default
     uint8_t subadr1 = PCA9xxxPWM::read(i2cAddr, i2cPort, PCA9622PWM::SUBADR1);
     uint8_t subadr2 = PCA9xxxPWM::read(i2cAddr, i2cPort, PCA9622PWM::SUBADR2);
     uint8_t subadr3 = PCA9xxxPWM::read(i2cAddr, i2cPort, PCA9622PWM::SUBADR3);
+
+    Serial.print(" SUBADDR1-3 = ");
+    Serial.print(subadr1, BIN);
+    Serial.print(subadr2, BIN);
+    Serial.println(subadr3, BIN);
 
     return subadr1 == 0b11100010 && subadr2 == 0b11100100 &&
            subadr3 == 0b11101000;

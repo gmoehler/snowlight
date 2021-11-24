@@ -5,7 +5,7 @@
 #include "snowlight.h"
 #include "snowlight_utils.h"
 
-extern xQueueHandle dispatchQueue;  // for interrupt send
+// extern xQueueHandle dispatchQueue;  // for interrupt send
 
 #define GPIO_INPUT_IO_0 GPIO_NUM_0
 #define GPIO_INPUT_PIN_SEL (1 << GPIO_INPUT_IO_0)

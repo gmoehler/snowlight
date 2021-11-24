@@ -6,7 +6,7 @@
 
 extern xQueueHandle ledQueue;  // for reading only
 
-void led_setup(uint8_t queueSize);
+bool led_setup(uint8_t queueSize);
 void led_start(uint8_t prio);
 
 #endif

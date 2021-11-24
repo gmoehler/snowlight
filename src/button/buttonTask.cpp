@@ -44,7 +44,7 @@ void IRAM_ATTR buttonIsrHandler(void* arg) {
         // clear press memory
         _lastPressedTime = 0;
         // send out event
-        xQueueSendFromISR(dispatchQueue, &cmd, NULL);
+        // xQueueSendFromISR(dispatchQueue, &cmd, NULL);
     }
 }
 
@@ -66,7 +66,7 @@ static void buttonLongPressedTask(void* arg) {
                 // clear press memory
                 _lastPressedTime = 0;
                 // send out event
-                sendRawToLight({BUTTON0_LONGCLICK}, BUTTON);
+                sendRawToLed({BUTTON0_LONGCLICK}, BUTTON);
             }
         }
     }

@@ -89,8 +89,7 @@ class PCA9622PWM : public PCA962xPWM {
         PWM_REGISTER_START = PWM0,
     };
 
-    PCA9622PWM(uint8_t i2cAddr, uint8_t output_enable_port,
-               TwoWire *i2cPort = &Wire);
+    PCA9622PWM(uint8_t i2cAddr, TwoWire *i2cPort = &Wire);
     virtual ~PCA9622PWM();
 
     String type_name(void);
@@ -105,7 +104,6 @@ class PCA9622PWM : public PCA962xPWM {
     static boolean _isMyDevice(uint8_t i2cAddr, TwoWire *i2cPort = &Wire);
 
     const uint8_t n_of_ports;
-    const uint8_t output_enable_port;
 };
 
 #endif

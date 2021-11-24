@@ -42,7 +42,7 @@
     }
 #endif
 
-#define N_CMD_FIELDS 1  // start with only command without args
+#define N_CMD_FIELDS 3  // start with command and 2 additional args
 
 // serial baud rate
 //#define UART_BAUD 115200
@@ -65,6 +65,7 @@ enum Color {
 // setup file tags for logger
 #define MAIN "MAIN"      // main program task
 #define LIGHTCMD "LCMD"  // light task
+#define EXAMPL "EXPL"    // example task
 
 #define LEDS "LEDS"     // led output task
 #define STEPPER "STEP"  // stepper output task

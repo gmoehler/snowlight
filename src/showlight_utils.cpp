@@ -2,25 +2,25 @@
 
 const char* _getQueueName(QueueType q) {
     switch (q) {
-        case LIGHT_QUEUE:
-            return "lightQueue";
+        case LED_QUEUE:
+            return "ledQueue";
 
         case STEPPER_QUEUE:
             return "stepperQueue";
     }
-    return "lightQueue";
+    return "ledQueue";
 }
 
 xQueueHandle _getQueue(QueueType q) {
     switch (q) {
-        case LIGHT_QUEUE:
-            return lightQueue;
+        case LED_QUEUE:
+            return ledQueue;
 
         case STEPPER_QUEUE:
             return stepperQueue;
     }
 
-    return lightQueue;
+    return ledQueue;
 }
 
 bool sendToQueue(QueueType q, LightCommand& cmd, const char* logtag,
@@ -43,13 +43,13 @@ bool sendToQueue(QueueType q, LightCommand& cmd, const char* logtag,
     return true;
 }
 
-bool sendToLight(LightCommand& cmd, const char* logtag, bool debugPrintout) {
-    return sendToQueue(LIGHT_QUEUE, cmd, logtag, debugPrintout);
+bool sendToLed(LightCommand& cmd, const char* logtag, bool debugPrintout) {
+    return sendToQueue(LED_QUEUE, cmd, logtag, debugPrintout);
 }
 
-bool sendRawToLight(RawCommand rawCmd, const char* logtag, bool debugPrintout) {
+bool sendRawToLed(RawCommand rawCmd, const char* logtag, bool debugPrintout) {
     LightCommand cmd(rawCmd);
-    return sendToQueue(LIGHT_QUEUE, cmd, logtag, debugPrintout);
+    return sendToQueue(LED_QUEUE, cmd, logtag, debugPrintout);
 }
 
 void clearQueue(QueueType q) {

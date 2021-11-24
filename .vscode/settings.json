@@ -1,0 +1,17 @@
+{
+  "files.associations": {
+    "*.js": "javascriptreact",
+    "array": "cpp",
+    "*.tcc": "cpp",
+    "string": "cpp",
+    "vector": "cpp",
+    "exception": "cpp",
+    "functional": "cpp",
+    "iomanip": "cpp",
+    "istream": "cpp",
+    "limits": "cpp",
+    "ostream": "cpp",
+    "sstream": "cpp",
+    "streambuf": "cpp"
+  }
+}
