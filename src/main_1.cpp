@@ -4,7 +4,7 @@
 #define DEFAULT_I2C_ADDR_9622 0x70  // At your preference (of your h/w setting)
 #define OE_PORT 2                   // port for PCA9622 output enablement
 
-PCA9622PWM pwm(DEFAULT_I2C_ADDR_9622, OE_PORT);
+PCA9622PWM pwm(DEFAULT_I2C_ADDR_9622);
 
 #include <Wire.h>
 

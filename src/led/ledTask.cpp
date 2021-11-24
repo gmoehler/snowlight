@@ -89,7 +89,7 @@ bool led_setup(uint8_t queueSize) {
 
     // uint8_t port = scanDevice();
     LOGW(LEDS, "Connecting to PCA9622 at %#04x ...", DEFAULT_I2C_ADDR_9622);
-    lightPwm = new PCA9622PWM(DEFAULT_I2C_ADDR_9622, OE_PORT);
+    lightPwm = new PCA9622PWM(DEFAULT_I2C_ADDR_9622);
     if (lightPwm->begin() == false) {
         LOGW(LEDS, "Unable to connect to PCA9622. Attempting to reset...");
         lightPwm->reset();

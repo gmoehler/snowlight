@@ -75,6 +75,8 @@ static void exampleTask(void* arg) {
     vTaskDelete(exampleTaskHandle);
 }
 
+// important: only start one example at a time,
+// since task is deleted after example has run
 void example_start(Example example, uint8_t prio) {
     LOGI(EXAMPL, "Starting example");
     exampleToRun = example;

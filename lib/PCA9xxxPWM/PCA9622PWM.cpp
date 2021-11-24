@@ -27,8 +27,7 @@
 
 #include "PCA9622PWM.h"
 
-PCA9622PWM::PCA9622PWM(uint8_t i2cAddr, uint8_t output_enable_port,
-                       TwoWire *i2cPort)
+PCA9622PWM::PCA9622PWM(uint8_t i2cAddr, TwoWire *i2cPort)
     : PCA962xPWM(i2cAddr, i2cPort), n_of_ports(16) {}
 
 PCA9622PWM::~PCA9622PWM() {}
