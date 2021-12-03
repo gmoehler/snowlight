@@ -17,6 +17,7 @@ void logging_setup() {
     esp_log_level_set(MAIN, DEFAULT_LOG_LEVEL);      // main program task
     esp_log_level_set(LIGHTCMD, DEFAULT_LOG_LEVEL);  // light command task
     esp_log_level_set(LEDS, DEFAULT_LOG_LEVEL);      // led task
+    esp_log_level_set(TOF, DEFAULT_LOG_LEVEL);       // tof task
     esp_log_level_set(STEPPER, DEFAULT_LOG_LEVEL);   // stepper task
     esp_log_level_set(BUTTON, DEFAULT_LOG_LEVEL);    // button task
     esp_log_level_set(EXAMPL, DEFAULT_LOG_LEVEL);    // example task
@@ -55,10 +56,10 @@ void setup() {
     // waiting for button interaction
 
     // start example
-    LOGD(MAIN, "Waiting for example...");
-    delay(3000);
-    LOGD(MAIN, "Starting example...");
-    example_start(ONOFF_EXAMPLE, 5);
+    // LOGD(MAIN, "Waiting for example...");
+    // delay(3000);
+    // LOGD(MAIN, "Starting example...");
+    // example_start(DIM_EXAMPLE, 5);
 }
 
 // everything works with tasks, we dont need the loop...

@@ -39,6 +39,18 @@ void dimBy(uint8_t val, bool increase) {
     lightPwm.pwm2(pwmData);
 }
 
+void toggle() {
+    LOGD(LEDS, "toggle");
+    lightPwm.exponential_adjustment(true);
+
+    for (int i = 0; i < nPorts; i++) {
+        uint8_t newVal = curPwmData[i] > 0 ? 0 : 255;
+        pwmData[i] = newVal;
+        curPwmData[i] = newVal;
+    }
+    lightPwm.pwm2(pwmData);
+}
+
 void testGradient() {
     uint8_t num_steps = 20;
     float step = 1.0 / num_steps;
@@ -89,6 +101,8 @@ void ledTask(void* arg) {
                 dimTo(255);
             } else if (cmd.getType() == LIGHT_OFF) {
                 dimTo(0);
+            } else if (cmd.getType() == LIGHT_TOGGLE) {
+                toggle();
             } else if (cmd.getType() == LIGHT_SET) {
                 dimTo(cmd.getField(1));
             } else if (cmd.getType() == LIGHT_BRIGHTEN) {

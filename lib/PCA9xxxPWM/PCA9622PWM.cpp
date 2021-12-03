@@ -69,7 +69,7 @@ boolean PCA9622PWM::isMyDevice(uint8_t i2cAddr, TwoWire *i2cPort) {
 
 // static
 boolean PCA9622PWM::_isMyDevice(uint8_t i2cAddr, TwoWire *i2cPort) {
-    Serial.println("PCA9622._isMyDevice");
+    // Serial.println("PCA9622._isMyDevice");
     // PCA9622 returns 0b11100010, 100, 1000 for SUBADR1 - SUBADR3 by default
     uint8_t subadr1 = PCA9xxxPWM::read(i2cAddr, i2cPort, PCA9622PWM::SUBADR1);
     uint8_t subadr2 = PCA9xxxPWM::read(i2cAddr, i2cPort, PCA9622PWM::SUBADR2);

@@ -51,7 +51,7 @@ void PCA962xPWM::reset(TwoWire *i2cPort) {
 
 // static
 boolean PCA962xPWM::isMyDevice(uint8_t i2cAddr, TwoWire *i2cPort) {
-    Serial.println("PCA962x.isMyDevice");
+    // Serial.println("PCA962x.isMyDevice");
     if (i2cAddr == ADR_ALLCALL) return false;
 
     // PCA962x devices commonly returns 0b10010001	for MODE1, 0b00000101
