@@ -5,7 +5,8 @@
 xQueueHandle ledQueue = NULL;
 #define DEFAULT_I2C_ADDR_9622 0x70  // At your preference (of your h/w setting)
 
-PCA9622PWM lightPwm(DEFAULT_I2C_ADDR_9622);
+TwoWire ledBus = TwoWire(1);
+PCA9622PWM lightPwm(DEFAULT_I2C_ADDR_9622, &ledBus);
 
 uint8_t nPorts = 0;
 uint8_t* pwmData;     // array of nPorts length for I2C communication
@@ -55,7 +56,7 @@ uint8_t scanDevice() {
     int nDevices;
     LOGI(LEDS, "Scanning...");
     nDevices = 0;
-    Wire.begin();
+    // Wire.begin();
     for (byte address = 1; address < 127; address++) {
         Wire.beginTransmission(address);
         error = Wire.endTransmission();
@@ -100,6 +101,9 @@ void ledTask(void* arg) {
 }
 
 bool led_setup(uint8_t queueSize) {
+    // Wire.setClock(400000);
+    ledBus.begin(16, 17, 100000);
+
     ledQueue = xQueueCreate(queueSize, sizeof(RawCommand));
     delay(1000);
 
@@ -116,7 +120,6 @@ bool led_setup(uint8_t queueSize) {
         }
     }
 
-    Wire.setClock(400000);
     nPorts = lightPwm.number_of_ports();
     pwmData = (uint8_t*)malloc(nPorts * sizeof(uint8_t*));
     curPwmData = (uint8_t*)malloc(nPorts * sizeof(uint8_t*));

@@ -7,6 +7,7 @@
 #include "soc/rtc_cntl_reg.h"
 #include "soc/soc.h"
 #include "stepper/stepperTask.h"
+#include "tof/tofTask.h"
 
 // unless defined differently below this is the default log level
 #define DEFAULT_LOG_LEVEL ESP_LOG_DEBUG
@@ -24,25 +25,40 @@ void logging_setup() {
 void disableBrownOut() { WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); }
 
 void setup() {
+    bool setupOk = true;
+
     // disableBrownOut();
     logging_setup();
 
     // setup tasks and queues with sizes
+    tof_setup();
+
     // button_setup();
-    bool ok = led_setup(10);
-    if (!ok) return;
+
+    bool ledOk = led_setup(10);
+    setupOk = setupOk && ledOk;
+
     // stepper_setup(10);
+
+    if (!setupOk) {
+        LOGE(MAIN, "Setup failed. Not starting tasks.");
+        return;
+    }
 
     // start tasks with prios
     // button_start(8);
     led_start(7);
+
     // stepper_start(7);
+    tof_start(7);
 
     // waiting for button interaction
 
     // start example
+    LOGD(MAIN, "Waiting for example...");
+    delay(3000);
     LOGD(MAIN, "Starting example...");
-    example_start(DIM_EXAMPLE, 5);
+    example_start(ONOFF_EXAMPLE, 5);
 }
 
 // everything works with tasks, we dont need the loop...

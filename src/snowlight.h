@@ -70,5 +70,6 @@ enum Color {
 #define LEDS "LEDS"     // led output task
 #define STEPPER "STEP"  // stepper output task
 #define BUTTON "BUTT"   // button task
+#define TOF "TOFS"      // tof sensor
 
 #endif

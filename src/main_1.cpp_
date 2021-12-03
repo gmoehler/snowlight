@@ -12,7 +12,7 @@ uint8_t n_of_ports = 0;
 boolean verbose = true;
 float* data;
 
-void setup2() {
+void setup() {
     Serial.begin(115200);
     delay(1000);
 
@@ -103,7 +103,7 @@ void test_all_gradient2(boolean exp_on) {
 
 // int i = 0;
 
-void loop2() {
+void loop() {
     // test_one_by_one(i++);
     // test_gradient(true);
     test_all_gradient2(true);

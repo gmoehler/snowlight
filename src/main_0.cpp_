@@ -5,13 +5,13 @@
 #include <Arduino.h>
 #include <Wire.h>
 
-void setup0() {
+void setup() {
     Wire.begin();
     Serial.begin(115200);
     Serial.println("\nI2C Scanner");
 }
 
-void loop0() {
+void loop() {
     byte error, address;
     int nDevices;
     Serial.println("Scanning...");

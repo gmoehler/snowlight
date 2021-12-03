@@ -12,6 +12,10 @@
     "limits": "cpp",
     "ostream": "cpp",
     "sstream": "cpp",
-    "streambuf": "cpp"
+    "streambuf": "cpp",
+    "deque": "cpp",
+    "unordered_map": "cpp",
+    "unordered_set": "cpp",
+    "initializer_list": "cpp"
   }
 }
