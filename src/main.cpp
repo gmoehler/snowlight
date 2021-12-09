@@ -17,7 +17,8 @@ void logging_setup() {
     esp_log_level_set(MAIN, DEFAULT_LOG_LEVEL);      // main program task
     esp_log_level_set(LIGHTCMD, DEFAULT_LOG_LEVEL);  // light command task
     esp_log_level_set(LEDS, DEFAULT_LOG_LEVEL);      // led task
-    esp_log_level_set(TOF, DEFAULT_LOG_LEVEL);       // tof task
+    esp_log_level_set(TOFS, DEFAULT_LOG_LEVEL);      // tof task
+    esp_log_level_set(GEST, ESP_LOG_INFO);           // gestures
     esp_log_level_set(STEPPER, DEFAULT_LOG_LEVEL);   // stepper task
     esp_log_level_set(BUTTON, DEFAULT_LOG_LEVEL);    // button task
     esp_log_level_set(EXAMPL, DEFAULT_LOG_LEVEL);    // example task

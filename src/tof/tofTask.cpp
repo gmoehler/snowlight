@@ -19,34 +19,34 @@ FixPoint1616_t distanceThreshold = 300;  // in mm
 static void tofTask(void* arg) {
     for (;;) {
         if (VL53LOX_State == LOW) {
-            LOGD(TOF, "Reading a measurement");
+            LOGD(TOFS, "Reading a measurement");
 
             lox.getRangingMeasurement(&measure, false);
             uint16_t distance = measure.RangeMilliMeter;
 
             // phase failures have incorrect data
             if (measure.RangeStatus != 4) {
-                LOGD(TOF, "RangeStatus       : %d", measure.RangeStatus);
-                LOGI(TOF, "Distance      (mm): %d", distance);
+                LOGD(TOFS, "RangeStatus       : %d", measure.RangeStatus);
+                LOGI(TOFS, "Distance      (mm): %d", distance);
             } else {
-                LOGW(TOF, "Distance out of range.");
+                LOGW(TOFS, "Distance out of range.");
             }
 
             gestureRecognition.addTofValue(distance);
             Gesture gesture = gestureRecognition.getGesture();
             if (gesture.type != NONE) {
-                LOGD(TOF, "Gesture detected: %s",
+                LOGD(TOFS, "Gesture detected: %s",
                      gestureRecognition.getGestureAsString().c_str());
             }
             switch (gesture.type) {
                 case LONG_HOLD:
-                    sendRawToLed({LIGHT_TOGGLE}, TOF);
+                    sendRawToLed({LIGHT_TOGGLE}, TOFS);
                     break;
                 case MOVE_UP:
-                    sendRawToLed({LIGHT_BRIGHTEN, gesture.param}, TOF);
+                    sendRawToLed({LIGHT_BRIGHTEN, gesture.param}, TOFS);
                     break;
                 case MOVE_DOWN:
-                    sendRawToLed({LIGHT_DIM, gesture.param}, TOF);
+                    sendRawToLed({LIGHT_DIM, gesture.param}, TOFS);
                     break;
                 case NONE:
                 default:
@@ -71,7 +71,7 @@ void VL53LOXISR() {
 }
 
 void tof_setup() {
-    LOGD(TOF, "Setting up TOF sensor:");
+    LOGD(TOFS, "Setting up TOF sensor:");
 
     pinMode(VL53LOX_ShutdownPin, INPUT_PULLUP);
     pinMode(VL53LOX_InterruptPin, INPUT_PULLUP);
@@ -86,12 +86,12 @@ void tof_setup() {
     int numTries = 10;
     int tries = 0;
     while (!lox.begin() && tries < numTries) {
-        LOGE(TOF, "Failed to boot VL53L0X");
-        LOGI(TOF, "Adafruit VL53L0X XShut set Low to Force HW Reset");
+        LOGE(TOFS, "Failed to boot VL53L0X");
+        LOGI(TOFS, "Adafruit VL53L0X XShut set Low to Force HW Reset");
         digitalWrite(VL53LOX_ShutdownPin, LOW);
         delay(100);
         digitalWrite(VL53LOX_ShutdownPin, HIGH);
-        LOGI(TOF, "Adafruit VL53L0X XShut set high to Allow Boot");
+        LOGI(TOFS, "Adafruit VL53L0X XShut set high to Allow Boot");
         delay(100);
         tries++;
     }
@@ -114,7 +114,7 @@ void tof_setup() {
     // Enable Continous Measurement Mode
     lox.setDeviceMode(VL53L0X_DEVICEMODE_CONTINUOUS_RANGING, true);
 
-    LOGD(TOF, "Starting measurement... ");
+    LOGD(TOFS, "Starting measurement... ");
     lox.startMeasurement();
 }
 

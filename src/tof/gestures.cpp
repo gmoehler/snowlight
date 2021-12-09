@@ -96,7 +96,7 @@ Gesture GestureRecognition::_detectGesture() {
             _longHoldInSession = true;
             return {LONG_HOLD};
         }
-        Serial.println("Skipping long-hold");
+        LOGI(GEST, "Skipping long-hold");
 
     } else if (_anaWin.getInterval() > _analysisInterval) {
         // after shorter analysis interval we only accept move
@@ -115,33 +115,26 @@ void GestureRecognition::addTofValue(uint16_t val) {
 
     // after re-entry reset everything
     if (now - _lastValueTime > _gapInterval) {
-        LOGD(GEST, "Gap detected");
-        Serial.println("Gap detected");
+        LOGI(GEST, "Gap detected");
         _resetSession();
     }
     _lastValueTime = now;
 
     // skip first n values because they tend to be too high
     if (_skipCounter > 0) {
-        Serial.println("Skipping value");
+        LOGI(GEST, "Skipping value");
         _skipCounter--;
         return;
     }
 
     uint16_t smoothedVal = _winsmoother.smooth(val);
     LOGD(GEST, "Val: %d, Smoothed: %d", val, smoothedVal);
-    /*Serial.print("Val /Smoothed: ");
-    Serial.print(val);
-    Serial.print(" ");
-    Serial.println(smoothedVal);*/
 
     _anaWin.addValue(smoothedVal, now);
 
     _lastGesture = _detectGesture();
     if (_lastGesture.type != NONE) {
-        LOGD(GEST, "Gesture detected: %s", getGestureAsString().c_str());
-        Serial.print("Gesture detected: ");
-        Serial.println(getGestureAsString().c_str());
+        LOGI(GEST, "Gesture detected: %s", getGestureAsString().c_str());
         _anaWin.reset();
     }
 }
