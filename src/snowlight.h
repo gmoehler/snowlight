@@ -11,6 +11,9 @@
 
 #include "esp_log.h"
 
+// use this type for consistency reasons
+typedef uint32_t millis_t;
+
 // need to define my own logging macros since other are not activated by
 // LOG_LOCAL_LEVEL as expected
 #ifndef LOG_MACROS
@@ -71,5 +74,6 @@ enum Color {
 #define STEPPER "STEP"  // stepper output task
 #define BUTTON "BUTT"   // button task
 #define TOF "TOFS"      // tof sensor
+#define GEST "GEST"     // gesture detection
 
 #endif

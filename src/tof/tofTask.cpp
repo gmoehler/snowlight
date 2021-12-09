@@ -1,5 +1,7 @@
 #include "tofTask.h"
 
+#include "gestures.h"
+
 // much of the code is taken from VL53LOX interrupt example
 
 #define LED_BUILTIN 2
@@ -8,113 +10,47 @@ const byte VL53LOX_InterruptPin = 19;
 const byte VL53LOX_ShutdownPin = 18;
 volatile byte VL53LOX_State = LOW;
 Adafruit_VL53L0X lox = Adafruit_VL53L0X();
+VL53L0X_RangingMeasurementData_t measure;
 
-FixPoint1616_t distanceThreshold = 200;
+GestureRecognition gestureRecognition = GestureRecognition();
 
-// smoothing window
-const uint8_t smoothWinSize = 9;
-uint16_t smoothWin[smoothWinSize];
-uint8_t smoothWinIndex = 0;
-int smoothWinSum = 0;
-
-// analysis window
-uint32_t lastAnalysisTime = 0;
-uint32_t analysisWinTime = 500;  // analysis time in millis
-uint16_t analysisWinMax = 0;
-uint16_t analysisWinMin = INT16_MAX;
-
-// resulting actions
-uint32_t longHoldStartTime = 0;
-uint32_t longHoldDuration = 2000;  // min time for a long "press" gesture
-
-// smoothing window
-// value will be too small for first smoothWinSize vals
-uint16_t getSmoothedValue(uint16_t newValue) {
-    smoothWinSum =
-        smoothWinSum - smoothWin[smoothWinIndex];  // remove oldest val from sum
-    smoothWin[smoothWinIndex] = newValue;          // add new val
-    smoothWinSum += newValue;
-    smoothWinIndex = (smoothWinIndex + 1) % smoothWinSize;
-
-    return smoothWinSum / smoothWinSize;
-}
-
-void resetLongHold() {
-    longHoldStartTime = 0;  // reset start time
-}
-
-void doAnalysis() {
-    int diff = analysisWinMax - analysisWinMin;
-    uint32_t now = millis();
-
-    if (abs(diff) < 10) {
-        // no movement (within 10mm): long hold?
-        Serial.printf("Static gesture detected (diff: %d).\n", diff);
-        Serial.printf("now: %.1f, start: %.1f, last: %.1f, dur: %.1f\n",
-                      now / 1000.0, longHoldStartTime / 1000.0,
-                      lastAnalysisTime / 1000.0, longHoldDuration / 1000.0);
-        if (longHoldStartTime == 0) {
-            longHoldStartTime = lastAnalysisTime;
-        }
-        if (now - longHoldStartTime > longHoldDuration) {
-            Serial.printf("Long press detected.\n");
-            sendRawToLed({LIGHT_TOGGLE}, TOF);
-            resetLongHold();
-        }
-    } else {
-        Serial.printf("Movement detected by %d.\n", diff);
-        uint8_t dimDiff = static_cast<uint8_t>(std::min(abs(diff), 255));
-        if (diff > 0) {
-            sendRawToLed({LIGHT_BRIGHTEN, dimDiff}, TOF);
-        } else {
-            sendRawToLed({LIGHT_DIM, dimDiff}, TOF);
-        }
-        resetLongHold();
-    }
-}
-
-void resetAnalysis() {
-    analysisWinMax = 0;
-    analysisWinMin = INT16_MAX;
-}
+FixPoint1616_t distanceThreshold = 300;  // in mm
 
 static void tofTask(void* arg) {
     for (;;) {
         if (VL53LOX_State == LOW) {
-            uint32_t now = millis();
-            LOGD(TOF, "Reading a measurement at (%f)... \n", now / 1000.0);
-
-            VL53L0X_RangingMeasurementData_t measure;
+            LOGD(TOF, "Reading a measurement");
 
             lox.getRangingMeasurement(&measure, false);
-
             uint16_t distance = measure.RangeMilliMeter;
-            uint16_t distSmoothed = getSmoothedValue(distance);
 
             // phase failures have incorrect data
             if (measure.RangeStatus != 4) {
                 LOGD(TOF, "RangeStatus       : %d", measure.RangeStatus);
                 LOGI(TOF, "Distance      (mm): %d", distance);
-                LOGI(TOF, "Smoothed Dist (mm): %d", distSmoothed);
             } else {
                 LOGW(TOF, "Distance out of range.");
             }
 
-            // update Analysis values
-            analysisWinMin = std::min(analysisWinMin, distSmoothed);
-            analysisWinMax = std::max(analysisWinMax, distSmoothed);
-
-            // detect first time after range re-enter
-            if (now - lastAnalysisTime > 2 * analysisWinTime) {
-                // need to set last analyis time - otherwise a long hold gesture
-                // is detected instantly
-                lastAnalysisTime = now;
+            gestureRecognition.addTofValue(distance);
+            Gesture gesture = gestureRecognition.getGesture();
+            if (gesture.type != NONE) {
+                LOGD(TOF, "Gesture detected: %s",
+                     gestureRecognition.getGestureAsString().c_str());
             }
-
-            if (now > lastAnalysisTime + analysisWinTime) {
-                doAnalysis();
-                lastAnalysisTime = now;
-                resetAnalysis();  // reset min/max
+            switch (gesture.type) {
+                case LONG_HOLD:
+                    sendRawToLed({LIGHT_TOGGLE}, TOF);
+                    break;
+                case MOVE_UP:
+                    sendRawToLed({LIGHT_BRIGHTEN, gesture.param}, TOF);
+                    break;
+                case MOVE_DOWN:
+                    sendRawToLed({LIGHT_DIM, gesture.param}, TOF);
+                    break;
+                case NONE:
+                default:
+                    break;  // do nothing
             }
 
             lox.clearInterruptMask(false);  // to get triggered again

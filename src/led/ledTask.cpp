@@ -30,9 +30,9 @@ void dimBy(uint8_t val, bool increase) {
     lightPwm.exponential_adjustment(true);
 
     for (int i = 0; i < nPorts; i++) {
-        uint8_t newVal = curPwmData[i] + (increase ? val : -val);
-        uint8_t newValNorm =
-            std::min(std::max(newVal, (uint8_t)0), (uint8_t)255);
+        // use integer to not go accross uint8_t boundaries
+        int newVal = curPwmData[i] + (increase ? val : -val);
+        uint8_t newValNorm = std::min(std::max(newVal, 0), 255);
         pwmData[i] = newValNorm;
         curPwmData[i] = newValNorm;
     }
