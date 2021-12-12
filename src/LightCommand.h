@@ -11,8 +11,9 @@ enum LightCommandType {
     LIGHT_DIM,
     LIGHT_BRIGHTEN,
 
-    BUTTON0_CLICK,
-    BUTTON0_LONGCLICK,
+    TOF_LONG_HOLD,
+    TOF_UP,
+    TOF_DOWN,
 
     END_COMMANDS,
 

@@ -9,57 +9,64 @@ TwoWire ledBus = TwoWire(1);
 PCA9622PWM lightPwm(DEFAULT_I2C_ADDR_9622, &ledBus);
 
 uint8_t nPorts = 0;
-uint8_t* pwmData;     // array of nPorts length for I2C communication
-uint8_t* curPwmData;  // array of nPorts length for current state of leds
+uint8_t* pwmData;   // array of nPorts length for I2C communication
+uint8_t curPwmVal;  // current global pwm val
+
+const uint8_t PWM_OFF = 0;   // pwm for light off
+const uint8_t PWM_ON = 127;  // pwm when switched on
+
+const uint8_t PWM_MIN = 1;    // dont dim below this val
+const uint8_t PWM_MAX = 255;  // dont dim above this val
+
+millis_t lastToggleTime = 0;
+const millis_t minToggleInterval = 1000;
+
+bool isLightOn() { return curPwmVal != PWM_OFF; }
+
+// keep pwm value in range
+uint8_t normVal(uint8_t val) {
+    return std::min(std::max(val, PWM_MIN), PWM_MAX);
+}
+
+// send pwm data to all channels and set curPwmVal
+void updatePwm(uint8_t val) {
+    for (int i = 0; i < nPorts; i++) {
+        pwmData[i] = curPwmVal;
+    }
+    lightPwm.pwm2(pwmData);
+    curPwmVal = val;
+}
 
 void dimTo(uint8_t val) {
     LOGD(LEDS, "Dimming to %.1d.", val);
-    uint8_t valNorm = std::min(std::max(val, (uint8_t)0), (uint8_t)255);
-    lightPwm.exponential_adjustment(true);
-
-    for (int i = 0; i < nPorts; i++) {
-        pwmData[i] = valNorm;
-        curPwmData[i] = valNorm;
-    }
-    lightPwm.pwm2(pwmData);
+    updatePwm(normVal(val));
 }
 
 void dimBy(uint8_t val, bool increase) {
-    LOGD(LEDS, "%s by %s%.1d.", increase ? "brighten" : "dim",
+    LOGD(LEDS, "%s by %s%.1d.", increase ? "Brighten" : "Dim",
          increase ? "" : "-", val);
-    lightPwm.exponential_adjustment(true);
 
-    for (int i = 0; i < nPorts; i++) {
-        // use integer to not go accross uint8_t boundaries
-        int newVal = curPwmData[i] + (increase ? val : -val);
-        uint8_t newValNorm = std::min(std::max(newVal, 0), 255);
-        pwmData[i] = newValNorm;
-        curPwmData[i] = newValNorm;
-    }
-    lightPwm.pwm2(pwmData);
+    // use integer to not go accross uint8_t boundaries
+    int newVal = curPwmVal + (increase ? val : -val);
+    updatePwm(normVal(newVal));
+}
+
+void off() {
+    LOGD(LEDS, "off");
+    updatePwm(PWM_OFF);
+}
+
+void on() {
+    LOGD(LEDS, "on");
+    updatePwm(PWM_OFF);
 }
 
 void toggle() {
     LOGD(LEDS, "toggle");
-    lightPwm.exponential_adjustment(true);
-
-    for (int i = 0; i < nPorts; i++) {
-        uint8_t newVal = curPwmData[i] > 0 ? 0 : 255;
-        pwmData[i] = newVal;
-        curPwmData[i] = newVal;
-    }
-    lightPwm.pwm2(pwmData);
-}
-
-void testGradient() {
-    uint8_t num_steps = 20;
-    float step = 1.0 / num_steps;
-    lightPwm.exponential_adjustment(true);
-    for (int j = 1; j <= num_steps; j++) {
-        float ratio = step * j;
-        LOGD(LEDS, "Dimming %d ratio: %.2f", j, ratio);
-        dimTo(ratio);
-        delay(100);
+    if (isLightOn()) {
+        off();
+    } else {
+        on();
     }
 }
 
@@ -88,6 +95,22 @@ uint8_t scanDevice() {
     return addressFound;
 }
 
+// light control logic
+void lightControl(LightCommand cmd) {
+    LightCommandType type = cmd.getType();
+
+    if (type == TOF_LONG_HOLD) {
+        millis_t now = millis();
+        // dont toggle immediately after last toggle
+        if (now - lastToggleTime > minToggleInterval) {
+            toggle();
+            lastToggleTime = millis();
+        }
+    } else if (isLightOn() && (type == TOF_UP || type == TOF_DOWN)) {
+        dimBy(cmd.getField(1), type == TOF_UP);
+    }
+}
+
 void ledTask(void* arg) {
     RawCommand rawCmd;
 
@@ -97,18 +120,28 @@ void ledTask(void* arg) {
             LightCommand cmd(rawCmd);
             LOGD(LEDS, "Receiving cmd: %s", cmd.toString().c_str());
 
-            if (cmd.getType() == LIGHT_ON) {
-                dimTo(255);
-            } else if (cmd.getType() == LIGHT_OFF) {
-                dimTo(0);
-            } else if (cmd.getType() == LIGHT_TOGGLE) {
-                toggle();
-            } else if (cmd.getType() == LIGHT_SET) {
-                dimTo(cmd.getField(1));
-            } else if (cmd.getType() == LIGHT_BRIGHTEN) {
-                dimBy(cmd.getField(1), true);
-            } else if (cmd.getType() == LIGHT_DIM) {
-                dimBy(cmd.getField(1), false);
+            switch (cmd.getType()) {
+                case LIGHT_ON:
+                    dimTo(255);
+                    break;
+                case LIGHT_OFF:
+                    dimTo(0);
+                    break;
+                case LIGHT_TOGGLE:
+                    toggle();
+                    break;
+                case LIGHT_SET:
+                    dimTo(cmd.getField(1));
+                    break;
+                case LIGHT_BRIGHTEN:
+                    dimBy(cmd.getField(1), true);
+                    break;
+                case LIGHT_DIM:
+                    dimBy(cmd.getField(1), false);
+                    break;
+                default:
+                    lightControl(cmd);
+                    break;
             }
         }
     }
@@ -126,9 +159,9 @@ bool led_setup(uint8_t queueSize) {
         LOGW(LEDS, "Unable to connect to PCA9622. Attempting to reset...");
         lightPwm.reset();
         if (lightPwm.begin() == false) {
-            LOGE(
-                LEDS,
-                "Device does not appear to be connected. Please check wiring.");
+            LOGE(LEDS,
+                 "Device does not appear to be connected. Please check "
+                 "wiring.");
             scanDevice();
             return false;
         }
@@ -136,13 +169,14 @@ bool led_setup(uint8_t queueSize) {
 
     nPorts = lightPwm.number_of_ports();
     pwmData = (uint8_t*)malloc(nPorts * sizeof(uint8_t*));
-    curPwmData = (uint8_t*)malloc(nPorts * sizeof(uint8_t*));
 
     LOGD(LEDS, "Number of LED ports: %d", nPorts);
+
+    lightPwm.exponential_adjustment(true);
+    off();  // start with lights off
     return true;
 }
 
 void led_start(uint8_t prio) {
-    // testGradient();
     xTaskCreate(ledTask, "ledTask", 4096, NULL, prio, NULL);
 }

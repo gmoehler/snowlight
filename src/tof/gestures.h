@@ -66,8 +66,6 @@ class GestureRecognition {
     Gesture _lastGesture = {NONE};
     millis_t _lastValueTime = 0;
     short _skipCounter = 3;  // skip first n values
-    int _numGesturesInSession = 0;
-    bool _longHoldInSession = false;
 
     Gesture _detectGesture();
     void _resetSession();

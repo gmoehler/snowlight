@@ -74,8 +74,6 @@ void GestureRecognition::_resetSession() {
     _winsmoother.reset();
     _anaWin.reset();
     _skipCounter = 2;
-    _numGesturesInSession = 0;
-    _longHoldInSession = false;
 }
 
 // returns gesture for current analysis window
@@ -85,23 +83,15 @@ Gesture GestureRecognition::_detectGesture() {
     if (_anaWin.getInterval() > _longHoldInterval) {
         // after long hold interval we can detect any gesture (incl long hold)
         if (_anaWin.getValueRange() > _stableRange) {
-            _numGesturesInSession++;
             return _anaWin.isUp()
                        ? (struct Gesture){MOVE_UP, _anaWin.getAbsValueDiff()}
                        : (struct Gesture){MOVE_DOWN, _anaWin.getAbsValueDiff()};
         }
-        // long hold must be almost the first one in the session
-        if (!_longHoldInSession && _numGesturesInSession < 5) {
-            _numGesturesInSession++;
-            _longHoldInSession = true;
-            return {LONG_HOLD};
-        }
-        LOGI(GEST, "Skipping long-hold");
+        return {LONG_HOLD};
 
     } else if (_anaWin.getInterval() > _analysisInterval) {
         // after shorter analysis interval we only accept move
         if (_anaWin.getValueRange() > _stableRange) {
-            _numGesturesInSession++;
             return _anaWin.isUp()
                        ? (struct Gesture){MOVE_UP, _anaWin.getAbsValueDiff()}
                        : (struct Gesture){MOVE_DOWN, _anaWin.getAbsValueDiff()};

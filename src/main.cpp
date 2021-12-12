@@ -1,5 +1,4 @@
 
-#include "button/buttonTask.h"
 #include "example/exampleTask.h"
 #include "led/ledTask.h"
 #include "snowlight.h"
@@ -54,11 +53,9 @@ void setup() {
     // stepper_start(7);
     tof_start(7);
 
-    // waiting for button interaction
+    // now waiting for interaction
 
     // start example
-    // LOGD(MAIN, "Waiting for example...");
-    // delay(3000);
     // LOGD(MAIN, "Starting example...");
     // example_start(DIM_EXAMPLE, 5);
 }

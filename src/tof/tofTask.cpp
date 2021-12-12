@@ -40,13 +40,13 @@ static void tofTask(void* arg) {
             }
             switch (gesture.type) {
                 case LONG_HOLD:
-                    sendRawToLed({LIGHT_TOGGLE}, TOFS);
+                    sendRawToLed({TOF_LONG_HOLD}, TOFS);
                     break;
                 case MOVE_UP:
-                    sendRawToLed({LIGHT_BRIGHTEN, gesture.param}, TOFS);
+                    sendRawToLed({TOF_UP, gesture.param}, TOFS);
                     break;
                 case MOVE_DOWN:
-                    sendRawToLed({LIGHT_DIM, gesture.param}, TOFS);
+                    sendRawToLed({TOF_DOWN, gesture.param}, TOFS);
                     break;
                 case NONE:
                 default:
