@@ -49,7 +49,7 @@ void dimBy(uint8_t val, bool increase) {
 
     // use integer to not go accross uint8_t boundaries
     int newVal = curPwmVal + (increase ? val : -val);
-    int newNormedVal = normVal(newVal);
+    uint8_t newNormedVal = normVal(newVal);
     LOGD(LEDS, "%s to %.1d normed: %.1d", increase ? "Brightening" : "Dimming",
          newVal, newNormedVal);
     updatePwm(newNormedVal);
