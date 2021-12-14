@@ -15,23 +15,24 @@ uint8_t curPwmVal;  // current global pwm val
 const uint8_t PWM_OFF = 0;   // pwm for light off
 const uint8_t PWM_ON = 127;  // pwm when switched on
 
-const uint8_t PWM_MIN = 1;    // dont dim below this val
+const uint8_t PWM_MIN = 11;   // dont dim below this val (exp adjustment: 1)
 const uint8_t PWM_MAX = 255;  // dont dim above this val
 
 millis_t lastToggleTime = 0;
 const millis_t minToggleInterval = 1000;
 
-bool isLightOn() { return curPwmVal != PWM_OFF; }
+bool isLightOn() { return curPwmVal > PWM_OFF; }
 
 // keep pwm value in range
-uint8_t normVal(uint8_t val) {
-    return std::min(std::max(val, PWM_MIN), PWM_MAX);
+// use int to also cut negative values
+uint8_t normVal(int val) {
+    return std::min(std::max(val, (int)PWM_MIN), (int)PWM_MAX);
 }
 
 // send pwm data to all channels and set curPwmVal
 void updatePwm(uint8_t val) {
     for (int i = 0; i < nPorts; i++) {
-        pwmData[i] = curPwmVal;
+        pwmData[i] = val;
     }
     lightPwm.pwm2(pwmData);
     curPwmVal = val;
@@ -48,7 +49,10 @@ void dimBy(uint8_t val, bool increase) {
 
     // use integer to not go accross uint8_t boundaries
     int newVal = curPwmVal + (increase ? val : -val);
-    updatePwm(normVal(newVal));
+    int newNormedVal = normVal(newVal);
+    LOGD(LEDS, "%s to %.1d normed: %.1d", increase ? "Brightening" : "Dimming",
+         newVal, newNormedVal);
+    updatePwm(newNormedVal);
 }
 
 void off() {
@@ -58,7 +62,7 @@ void off() {
 
 void on() {
     LOGD(LEDS, "on");
-    updatePwm(PWM_OFF);
+    updatePwm(PWM_ON);
 }
 
 void toggle() {
@@ -108,6 +112,8 @@ void lightControl(LightCommand cmd) {
         }
     } else if (isLightOn() && (type == TOF_UP || type == TOF_DOWN)) {
         dimBy(cmd.getField(1), type == TOF_UP);
+    } else {
+        LOGD(LEDS, "Ignoring cmd because lights are off.");
     }
 }
 
