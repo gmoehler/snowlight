@@ -60,13 +60,15 @@ static void dimLightExampleStart() {
 
     sendRawToLed({LIGHT_OFF}, EXAMPL);  // black
 
-    for (int j = 0; j <= num_steps; j++) {
-        sendRawToLed({LIGHT_BRIGHTEN, step}, EXAMPL);  // dim
-        delay(500);
-    }
-    for (int j = 0; j <= num_steps; j++) {
-        sendRawToLed({LIGHT_DIM, step}, EXAMPL);  // dim
-        delay(500);
+    for (int i = 0; i < 100; i++) {
+        for (int j = 0; j <= num_steps; j++) {
+            sendRawToLed({LIGHT_BRIGHTEN, step}, EXAMPL);  // dim
+            delay(500);
+        }
+        for (int j = 0; j <= num_steps; j++) {
+            sendRawToLed({LIGHT_DIM, step}, EXAMPL);  // dim
+            delay(500);
+        }
     }
 }
 

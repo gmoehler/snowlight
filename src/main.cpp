@@ -32,7 +32,8 @@ void setup() {
     logging_setup();
 
     // setup tasks and queues with sizes
-    tof_setup();
+    bool tofOk = tof_setup();
+    setupOk = setupOk && tofOk;
 
     // button_setup();
 

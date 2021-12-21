@@ -8,7 +8,7 @@
 
 // extern xQueueHandle dispatchQueue;  // for interrupt send
 
-void tof_setup();
+bool tof_setup();
 void tof_start(uint8_t prio);
 
 #endif

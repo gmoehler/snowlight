@@ -70,7 +70,7 @@ void VL53LOXISR() {
     digitalWrite(LED_BUILTIN, VL53LOX_State);
 }
 
-void tof_setup() {
+bool tof_setup() {
     LOGD(TOFS, "Setting up TOF sensor:");
 
     pinMode(VL53LOX_ShutdownPin, INPUT_PULLUP);
@@ -95,6 +95,9 @@ void tof_setup() {
         delay(100);
         tries++;
     }
+    if (tries == numTries) {
+        return false;
+    }
 
     // trigger GPIO when range is lower than low threshold
     // options are:
@@ -116,6 +119,7 @@ void tof_setup() {
 
     LOGD(TOFS, "Starting measurement... ");
     lox.startMeasurement();
+    return true;
 }
 
 void tof_start(uint8_t prio) {
